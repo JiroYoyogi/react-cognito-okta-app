@@ -1,5 +1,4 @@
-// App.js
-
+// Home.js
 import { useAuth } from "react-oidc-context";
 import {
   cognitoClientId,
@@ -13,7 +12,7 @@ function Home() {
   const auth = useAuth();
   const signOutRedirect = () => {
     setIsLoogingOut(true);
-    auth.removeUser(); // authの状態が変わる！！！
+    auth.removeUser(); // authの状態変更
     window.location.href = `${cognitoDomain}/logout?client_id=${cognitoClientId}&logout_uri=${encodeURIComponent(
       cognitoLogoutUri
     )}`;

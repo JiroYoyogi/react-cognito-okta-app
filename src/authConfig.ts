@@ -1,6 +1,8 @@
+// https://ap-northeast-1abcd.auth.ap-northeast-1.amazoncognito.com
 export const cognitoDomain= "";
+// https://trial-12345.okta.com
 export const oktaDomain = "";
-export const appDomain = "";
+export const appDomain = "http://localhost:5173";
 
 export const cognitoLogoutUri = `${appDomain}/callback-logout/`;
 export const cognitoClientId = "";

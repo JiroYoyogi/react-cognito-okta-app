@@ -19,8 +19,14 @@
 - サインアップのための必須属性
   - email
 
+上記作成後に「概要」→「名前変更」
+
+- User pool with Okta
+
 # Okta・新しいアプリ統合を作成
 
+- アプリ名
+  - Cognito SAML
 - シングルサインオンURL
   - 自分のCognitoドメイン/saml2/idpresponse
   - 例: `https://ap-northeast-1zpzvpl7q4.auth.ap-northeast-1.amazoncognito.com/saml2/idpresponse`
@@ -39,7 +45,7 @@
   - email: email
   - name: displayname
 
-# Connito・アイデンティティプロバイダーを追加
+プリケーションクライアント → ログインページ
 
 - 許可されているコールバック URL
   - https://jwt.io/ja

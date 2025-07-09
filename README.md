@@ -121,7 +121,9 @@ import App from "./App";
 import { AuthProvider } from "react-oidc-context";
 
 const cognitoAuthConfig = {
+  // e.g. https://cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_c7NPd74MH
   authority: "https://cognito-idp.ap-northeast-1.amazonaws.com/{ユーザープール ID}",
+  // e.g. 6ehuq2e03ftb5kr5dgl2ke5h0o
   client_id: "{アプリケーションクライアントID}",
   redirect_uri: "http://localhost:5173/",
   response_type: "code",
@@ -151,8 +153,10 @@ function App() {
   const auth = useAuth();
 
   const signOutRedirect = () => {
+    // e.g. 6ehuq2e03ftb5kr5dgl2ke5h0o
     const clientId = "{アプリケーションクライアントID}";
     const logoutUri = "http://localhost:5173/";
+    // e.g. https://ap-northeast-1c7npd74mh.auth.ap-northeast-1.amazoncognito.com
     const cognitoDomain = "{Cognito ドメイン}";
     window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
   };

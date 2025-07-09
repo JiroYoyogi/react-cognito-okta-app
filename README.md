@@ -111,10 +111,10 @@ npm install oidc-client-ts react-oidc-context --save
 
 ## コード変更
 
-- index.js
+- main.tsx
 
 ```js
-// index.js
+// main.tsx
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
@@ -123,7 +123,7 @@ import { AuthProvider } from "react-oidc-context";
 const cognitoAuthConfig = {
   authority: "https://cognito-idp.ap-northeast-1.amazonaws.com/{ユーザープール ID}",
   client_id: "{アプリケーションクライアントID}",
-  redirect_uri: "http://localhost:5173/callback-login/",
+  redirect_uri: "http://localhost:5173/",
   response_type: "code",
   scope: "email openid phone",
 };
@@ -140,10 +140,10 @@ root.render(
 );
 ```
 
-- App.js
+- App.tsx
 
 ```js
-// App.js
+// App.tsx
 
 import { useAuth } from "react-oidc-context";
 
@@ -152,7 +152,7 @@ function App() {
 
   const signOutRedirect = () => {
     const clientId = "{アプリケーションクライアントID}";
-    const logoutUri = "http://localhost:3000/";
+    const logoutUri = "http://localhost:5173/";
     const cognitoDomain = "{Cognito ドメイン}";
     window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
   };

@@ -130,7 +130,7 @@ const cognitoAuthConfig = {
   scope: "email openid phone",
 };
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
+const root = ReactDOM.createRoot(document.getElementById("root")!);
 
 // wrap the application with AuthProvider
 root.render(

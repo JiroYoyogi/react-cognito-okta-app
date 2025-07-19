@@ -5,16 +5,15 @@ import {
   cognitoDomain,
   appDomain
 } from "../authConfig";
-import { useState } from "react";
 
 function Home() {
-  const [ isLoggingOut, setIsLoogingOut ] = useState(false);
+
   const auth = useAuth();
+
   const signOutRedirect = () => {
-    setIsLoogingOut(true);
     auth.removeUser(); // sessionストレージをクリア
     window.location.href = `${cognitoDomain}/logout?client_id=${cognitoClientId}&logout_uri=${encodeURIComponent(
-      `${appDomain}/callback-logout/`
+      `${appDomain}/`
     )}`;
   };
 
@@ -24,10 +23,6 @@ function Home() {
 
   if (auth.error) {
     return <div>Encountering error... {auth.error.message}</div>;
-  }
-
-  if (isLoggingOut) {
-    return <div>Logging out...</div>;
   }
 
   return (

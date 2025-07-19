@@ -1,194 +1,204 @@
 # 作業手順
 
-1. Cognito・ユーザープール作成
-2. Okta・新しいアプリ統合を作成
-3. Connito・アイデンティティプロバイダーを追加
-4. ログイン出来るかテスト
-5. ユーザー名をトークンに入れる・Lambdaトリガー作成
-6. OAuth 付与タイプを変更
-7. Reactにログイン機能を実装（Cognitoにあるサンプル）
+1. アプリケーション（React）をDL
+2. 変数設定・初期状態を確認
+3. ログインコールバックを作成
+4. Oktaでもログアウトする方法
+5. Oktaでもログアウト・パターン１
+6. Oktaでもログアウト・パターン２
 
-# Cognito・ユーザープール作成
+# 前提
 
-- アプリケーションタイプ
-  - シングルページアプリケーション(SPA)
-- アプリケーションに名前を付ける
-  - My SPA app
-- サインイン識別子オプション
-  - メールアドレス
-- サインアップのための必須属性
-  - email
+CognitoとOktaのSAML連携済み。まだの方は下記を参考に連携を済ませて下さい。
 
-上記作成後に「概要」→「名前変更」
+- [【動画版】CognitoをOktaとSAML連携するハンズオン](https://youtu.be/LDrlnx3Scaw?si=YxspMmV5BneKcFq6)
+- [【Qiita版】CognitoをOktaとSAML連携するハンズオン](https://qiita.com/kenny_g/items/074b1cc4653ab0be7e43)
 
-- User pool with Okta
-
-# Okta・新しいアプリ統合を作成
-
-- アプリ名
-  - Cognito SAML
-- シングルサインオンURL
-  - 自分のCognitoドメイン/saml2/idpresponse
-  - 例: `https://ap-northeast-1zpzvpl7q4.auth.ap-northeast-1.amazoncognito.com/saml2/idpresponse`
-- オーディエンスURI（SPエンティティID）
-  - urn:amazon:cognito:sp:ユーザープール ID
-  - 例: `urn:amazon:cognito:sp:ap-northeast-1_ZpzVPl7Q4`
-- 属性ステートメント（オプション）
-  - email: user.email
-  - displayname: user.displayName
-
-# Connito・アイデンティティプロバイダーを追加
-
-- プロバイダー名
-  - Okta
-- プロバイダーとユーザープールの間で属性をマッピング
-  - email: email
-  - name: displayname
-
-プリケーションクライアント → ログインページ
+また、アプリケーションクライアントの設定が下記のようになってることも確認して下さい。
 
 - 許可されているコールバック URL
-  - https://jwt.io/ja
-- ID プロバイダー
-  - "Okta"を追加
-- OAuth 2.0 許可タイプ
-  - "認可コード付与"を削除 ❎
-  - "暗黙的な付与"を追加 ✅
+  - http://localhost:5173/
+- 許可されているサインアウト URL
+  - http://localhost:5173/
 
-# ユーザー名をトークンに入れる・Lambdaトリガー作成
+# 環境
 
-トークンに任意の属性を含めたい
+リポジトリ作成時の環境は以下です。
 
-- トリガータイプ: 認証
-- サインアップ: トークン生成前トリガー
-- Lambda関数の作成
-- 関数名: cognito-token-customizer
-- ランタイム: Node.js 22.x
-- 実行ロール: 基本的な Lambda アクセス権限で新しいロールを作成
+- Node.js
+  - v22.14.0
 
-```js
-export const handler = async (event) => {
-  // userAttributes から必要な属性をトークンに追加
-  const attrs = event.request.userAttributes;
+# 1. アプリケーション（React）をDL
 
-  event.response = {
-    claimsAndScopeOverrideDetails: {
-      idTokenGeneration: {
-        claimsToAddOrOverride: {
-          name: attrs.name,
-          email: attrs.email
-        },
-      }
-    }
-  };
+ブランチが「02_react」であることを確認した上で、右上「Code」よりDL
 
-  return event;
-};
-```
+# 2. 変数設定・初期状態を確認
 
-# OAuth 付与タイプを変更
+## 変数設定
 
-PKCE検証無しでトークンを受け取れてしまう状態を修正
+下記4つの変数を設定する。
 
-- "暗黙的な付与"を削除 ❎
-- "認証コード付与"を追加 ✅
+（src/authConfig.ts）
 
-# Reactにログイン機能を実装（Cognitoにあるサンプル）
+- cognitoDomain
+  - Cognitoドメイン
+  - e.g. `https://ap-northeast-1ga5zacsn4.auth.ap-northeast-1.amazoncognito.com`
+- cognitoUserPoolId
+  - ユーザープール ID
+  - e.g. `ap-northeast-1_Ga5ZacSN4`
+- cognitoClientId
+  - アプリケーションクライアントID
+  - e.g. `2hoqf7stavskccjltmtpm93hsq`
+- oktaDomain
+  - ご自身のOktaドメイン
+  - e.g. `https://trial-12345.okta.com`
 
-Cognitoに記載されているReact用のサンプルコードを実装（2025.7月現在記載のもの）
+## 初期状態を確認
 
-## Reactアプリ作成
+### 許可されているコールバック・サインアウトURLを確認（AWSマネコン）
+
+- 許可されているコールバック URL
+  - http://localhost:5173/
+- 許可されているサインアウト URL
+  - http://localhost:5173/
+
+### React関連のライブラリインストール
 
 ```
-npm create vite@latest
+npm install
 ```
 
-## ライブラリインストール
+### ログイン関連のライブラリインストール（pacage.jsonにリストアップ済み）
 
 ```
 npm install oidc-client-ts react-oidc-context --save
 ```
 
-## コード変更
+### アプリ起動
 
-- main.tsx
+```
+npm run dev
+```
+
+# 3. ログインコールバックを作成
+
+- authConfig.ts
+
+redirect_uriを変更する。
 
 ```js
-// main.tsx
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App";
-import { AuthProvider } from "react-oidc-context";
-
-const cognitoAuthConfig = {
-  // e.g. https://cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_c7NPd74MH
-  authority: "https://cognito-idp.ap-northeast-1.amazonaws.com/{ユーザープール ID}",
-  // e.g. 6ehuq2e03ftb5kr5dgl2ke5h0o
-  client_id: "{アプリケーションクライアントID}",
-  redirect_uri: "http://localhost:5173/",
+export const cognitoConfig = {
+  authority: `https://cognito-idp.ap-northeast-1.amazonaws.com/${cognitoUserPoolId}`,
+  client_id: cognitoClientId,
+  redirect_uri: `${appDomain}/callback-login/`, // ⭐️
   response_type: "code",
   scope: "email openid phone",
 };
-
-const root = ReactDOM.createRoot(document.getElementById("root")!);
-
-// wrap the application with AuthProvider
-root.render(
-  <React.StrictMode>
-    <AuthProvider {...cognitoAuthConfig}>
-      <App />
-    </AuthProvider>
-  </React.StrictMode>
-);
 ```
 
-- App.tsx
+- AWSマネコンで「許可されているコールバック URL」を変更する
+
+```
+http://localhost:5173/callback-login/
+```
+
+# 4. Oktaでもログアウトする方法
+
+- CORS許可パターン（S3でもいける）・パターン１
+- POST受信エンドポイントパターン（サーバーが必要）・パターン２
+
+# 5. Oktaでもログアウト・パターン１
+
+## コード変更
+
+- Home.tsx
 
 ```js
-// App.tsx
-
-import { useAuth } from "react-oidc-context";
-
-function App() {
-  const auth = useAuth();
-
   const signOutRedirect = () => {
-    // e.g. 6ehuq2e03ftb5kr5dgl2ke5h0o
-    const clientId = "{アプリケーションクライアントID}";
-    const logoutUri = "http://localhost:5173/";
-    // e.g. https://ap-northeast-1c7npd74mh.auth.ap-northeast-1.amazoncognito.com
-    const cognitoDomain = "{Cognito ドメイン}";
-    window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+    auth.removeUser(); // sessionストレージをクリア
+    window.location.href = `${cognitoDomain}/logout?client_id=${cognitoClientId}&logout_uri=${encodeURIComponent(
+      `${appDomain}/callback-logout/`
+    )}`;
   };
-
-  if (auth.isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (auth.error) {
-    return <div>Encountering error... {auth.error.message}</div>;
-  }
-
-  if (auth.isAuthenticated) {
-    return (
-      <div>
-        <pre> Hello: {auth.user?.profile.email} </pre>
-        <pre> ID Token: {auth.user?.id_token} </pre>
-        <pre> Access Token: {auth.user?.access_token} </pre>
-        <pre> Refresh Token: {auth.user?.refresh_token} </pre>
-
-        <button onClick={() => auth.removeUser()}>Sign out</button>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <button onClick={() => auth.signinRedirect()}>Sign in</button>
-      <button onClick={() => signOutRedirect()}>Sign out</button>
-    </div>
-  );
-}
-
-export default App;
 ```
+
+## AWSマネコンでサインアウトURLを変更
+
+許可されているサインアウト URLを下記に変更（AWSマネコン）
+
+```
+http://localhost:5173/callback-logout/
+```
+
+## Oktaでアプリへのリダイレクトを許可
+
+セキュリテイ→API→信頼済みオリジン
+
+- オリジン名
+  - ローカルホスト
+- オリジンの​URL 
+  - http://localhost:5173/
+- タイプを​選択
+  - リダイレクト
+
+# 6. Oktaでもログアウト・パターン２
+
+## 手順
+
+- ソーシャルプロバイダーと外部プロバイダーの設定変更
+- 署名証明書をDL・Oktaにアップロード
+- Expressで「SAML LogoutRequest」をキャッチする
+
+## ソーシャルプロバイダーと外部プロバイダーの設定変更
+
+下記にチェックを入れる
+
+- サインアウトフローを追加
+- このプロバイダーへの SAML リクエストに署名する
+
+## 署名証明書をDL・Oktaにアップロード
+
+### AWS
+
+.crtとしてダウンロード
+
+### Okta
+
+- 名前IDの​フォーマット
+  - Persistent
+- 署名証明書
+  - .crtファイルをアップロード
+- シングルログアウトを​有効化
+  - アプリケーションに​よる​シングルログアウトの​開始を​許可
+- シングルログアウトURL 
+  - http://localhost:3000/api/logout-complete
+- SP発行者
+  - オーディエンスURIと同じ値
+- 署名付きリクエスト
+  - 署名証明書を​使用して​SAMLリクエストを​検証します。
+
+## Expressで「SAML LogoutRequest」をキャッチする
+
+### Expressをインストール
+
+```
+npm i express@5.1.0
+```
+
+### コマンドを追加
+
+- package.json
+
+```
+  "scripts": {
+    "dev": "vite",
+    "server": "node server.js",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "dev:full": "concurrently \"npm run dev\" \"npm run server\""
+  },
+```
+
+
+

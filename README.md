@@ -30,7 +30,7 @@ CognitoとOktaのSAML連携済み。まだの方は下記を参考に連携を�
 
 # 1. アプリケーション（React）をDL
 
-ブランチが「02_react」であることを確認した上で、右上「Code」よりDL
+ブランチが「react」であることを確認した上で、右上「Code」よりDL
 
 # 2. 変数設定・初期状態を確認
 
@@ -68,7 +68,9 @@ CognitoとOktaのSAML連携済み。まだの方は下記を参考に連携を�
 npm install
 ```
 
-### ログイン関連のライブラリインストール（pacage.jsonにリストアップ済み）
+### ログイン関連のライブラリインストール
+
+スキップして大丈夫です。pacage.jsonにリストアップしてるので上記でインストール済みです。
 
 ```
 npm install oidc-client-ts react-oidc-context --save
@@ -160,7 +162,7 @@ http://localhost:5173/callback-logout/
 
 ### AWS
 
-.crtとしてダウンロード
+署名証明書を.crtとしてダウンロード
 
 ### Okta
 

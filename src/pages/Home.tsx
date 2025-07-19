@@ -2,8 +2,8 @@
 import { useAuth } from "react-oidc-context";
 import {
   cognitoClientId,
-  cognitoLogoutUri,
   cognitoDomain,
+  appDomain
 } from "../authConfig";
 import { useState } from "react";
 
@@ -12,9 +12,9 @@ function Home() {
   const auth = useAuth();
   const signOutRedirect = () => {
     setIsLoogingOut(true);
-    auth.removeUser(); // authの状態変更
+    auth.removeUser(); // sessionストレージをクリア
     window.location.href = `${cognitoDomain}/logout?client_id=${cognitoClientId}&logout_uri=${encodeURIComponent(
-      cognitoLogoutUri
+      `${appDomain}/callback-logout/`
     )}`;
   };
 

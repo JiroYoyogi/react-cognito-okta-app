@@ -5,16 +5,17 @@ import { useAuth } from "react-oidc-context";
 
 // 作らないとURLにコードがくっついたままになる！！
 const CallbackLogin = () => {
-  const oidc = useAuth();
+  const auth = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!oidc.isLoading && oidc.isAuthenticated) {
+    if (!auth.isLoading && auth.isAuthenticated) {
       navigate('/');
     }
-  }, [oidc.isLoading, oidc.isAuthenticated, navigate]);
-  if (oidc.isLoading) return <div>Loading...</div>;
-  if (oidc.error) return <div>Encountering error... {oidc.error.message}</div>;
+  }, [auth.isLoading, auth.isAuthenticated, navigate]);
+  
+  if (auth.isLoading) return <div>Loading...</div>;
+  if (auth.error) return <div>Encountering error... {auth.error.message}</div>;
 
   return null;
 };

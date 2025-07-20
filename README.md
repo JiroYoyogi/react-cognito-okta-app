@@ -6,6 +6,7 @@
 4. Oktaでもログアウトする方法
 5. Oktaでもログアウト・パターン１
 6. Oktaでもログアウト・パターン２
+7. 有効期限切れトークンを更新（おまけ）
 
 # 前提
 
@@ -70,7 +71,7 @@ npm install
 
 ### ログイン関連のライブラリインストール
 
-スキップして大丈夫です。pacage.jsonにリストアップしてるので上記でインストール済みです。
+スキップして大丈夫です。上記でインストール済みです。
 
 ```
 npm install oidc-client-ts react-oidc-context --save
@@ -187,6 +188,12 @@ http://localhost:5173/callback-logout/
 npm i express@5.1.0
 ```
 
+### ExpressとReactを同時起動するライブラリ追加
+
+```
+npm i concurrently
+```
+
 ### コマンドを追加
 
 - package.json
@@ -202,5 +209,70 @@ npm i express@5.1.0
   },
 ```
 
+# 7. 有効期限切れトークンを更新（おまけ）
 
+（Home.tsx）
 
+- useEffectをインポート
+
+```ts
+import { useEffect } from "react";
+```
+
+- useEffectを作成
+
+```ts
+  // トークン更新と残り時間のチェック
+  useEffect(() => {
+    if (!auth.isAuthenticated || !auth.user || auth.isLoading) return;
+
+    const expiresAt = auth.user.expires_at ?? 60 * 60;
+    console.log(expiresAt);
+
+    const updateTimeLeftAndRefresh = () => {
+      const expiresIn = expiresAt * 1000 - Date.now();
+      if (expiresIn < 3 * 60 * 1000) {
+        auth.signinSilent().catch(() => {
+          auth.signinRedirect();
+        });
+      }
+    };
+
+    // 1分ごとに残り時間を更新
+    const intervalId = setInterval(updateTimeLeftAndRefresh, 60 * 1000);
+
+    // 初回実行
+    updateTimeLeftAndRefresh();
+
+    return () => clearInterval(intervalId);
+  }, [auth]);
+```
+
+- トークンの有効期限を表示
+
+```html
+  <dt>トークンの有効期限</dt>
+  <dd>
+    {formatTime(auth.user?.expires_at as number)}
+  </dd>
+```
+
+- フォーマット関数
+
+```jsx
+  const formatTime = (timestamp: number) => {
+    const date = new Date(timestamp * 1000);
+    return date.toLocaleString("ja-JP", {
+      timeZone: "Asia/Tokyo",
+      hour12: false, // 24時間表記
+    });
+  };
+```
+
+- Loadingの条件文を変更
+
+```jsx
+  if (auth.isLoading && !auth.user) {
+    return <div>Loading...</div>;
+  }
+```

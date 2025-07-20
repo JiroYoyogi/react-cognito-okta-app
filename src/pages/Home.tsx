@@ -1,13 +1,8 @@
 // Home.js
 import { useAuth } from "react-oidc-context";
-import {
-  cognitoClientId,
-  cognitoDomain,
-  appDomain
-} from "../authConfig";
+import { cognitoClientId, cognitoDomain, appDomain } from "../authConfig";
 
 function Home() {
-
   const auth = useAuth();
 
   const signOutRedirect = () => {
@@ -29,7 +24,12 @@ function Home() {
     <main>
       {auth.isAuthenticated ? (
         <>
-          <p>こんにちは、{auth.user?.profile.name}さん</p>
+          <p>ログイン中</p>
+          {auth.user?.profile.name ? (
+            <p>こんにちは、{auth.user?.profile.name}</p>
+          ) : (
+            <p>{auth.user?.profile.email}</p>
+          )}
           <dl>
             <dt>ID Token</dt>
             <dd>

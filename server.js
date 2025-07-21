@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.post('/complete-logout', (req, res) => {
+app.post('/api/logout-complete', (req, res) => {
   console.log('SAMLResponse received:', req.body);
 
   const redirectTo = isProduction

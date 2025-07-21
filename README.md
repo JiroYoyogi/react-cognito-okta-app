@@ -209,6 +209,19 @@ npm i concurrently
   },
 ```
 
+### logout_uriを削除
+
+- Home.tsx
+
+signOutRedirectを下記と置き換える。
+
+```tsx
+  const signOutRedirect = () => {
+    auth.removeUser(); // sessionストレージをクリア
+    window.location.href = `${cognitoDomain}/logout?client_id=${cognitoClientId}`;
+  };
+```
+
 # 7. 有効期限切れトークンを更新（おまけ）
 
 （Home.tsx）

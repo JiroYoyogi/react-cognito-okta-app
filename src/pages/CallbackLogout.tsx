@@ -7,7 +7,6 @@ const CallbackLogout = () => {
     // OktaのログアウトURLへリダイレクト
     const oktaLogoutUrl = `${oktaDomain}/login/signout?fromURI=${encodeURIComponent(appDomain)}`;
     window.location.href = oktaLogoutUrl;
-    window.location.href = appDomain;
   }, []);
 
   return <div>Logging out...</div>;
